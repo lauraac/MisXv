@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- ==== PREVIEW Open Graph / WhatsApp ==== -->
+  <link rel="canonical" href="https://invitacionuri.netlify.app/CASE_PATH/modelo5/" />
+  <meta property="og:url" content="https://invitacionuri.netlify.app/CASE_PATH/modelo5/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Invitaciones LAC" />
+  <meta property="og:title" content="Invitación • XV de Ximena Adilene" />
+  <meta property="og:description" content="20 de diciembre • ¡Te espero! ✨" />
+
+  <!-- Imagen 1200×630 (URL pública absoluta) -->
+  <meta property="og:image" content="https://invitacionuri.netlify.app/CASE_PATH/modelo5/img/og-quince.jpg?v=1" />
+  <meta property="og:image:secure_url"
+    content="https://invitacionuri.netlify.app/CASE_PATH/modelo5/img/og-quince.jpg?v=1" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Invitación XV de Ximena Adilene" />
+  <meta property="og:locale" content="es_MX" />
+
+  <!-- Twitter (algunas apps lo usan) -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Invitación • XV de Ximena Adilene" />
+  <meta name="twitter:description" content="20 de diciembre • ¡Te espero! ✨" />
+  <meta name="twitter:image" content="https://invitacionuri.netlify.app/CASE_PATH/modelo5/img/og-quince.jpg?v=1" />
+
+  <!-- CSS/Fonts opcionales -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;400;600&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+
+  <title>XV • Ximena Adilene</title>
+</head>
+
+
+<body class="mobile-only">
+  <div id="desktopNotice" role="dialog" aria-labelledby="dnTitle" aria-describedby="dnDesc">
+    <div class="box">
+      <h2 id="dnTitle">Diseñada para teléfono 📱</h2>
+      <p id="dnDesc" style="margin:.5rem 0 1rem">
+        Para verla correctamente, abre este enlace desde tu celular
+        o reduce el ancho de la ventana hasta tamaño móvil.
+      </p>
+      <a class="btn btn-fill" href="#" onclick="window.scrollTo(0,0); return false;">Entendido</a>
+    </div>
+  </div>
+
+  <!-- ===== Intro Video (Splash) ===== -->
+  <div id="intro" class="intro-overlay" style="
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: #000;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+      " aria-label="Video de entrada">
+    <!-- Reemplaza tu <video> por este (sin poster) -->
+    <video id="introVideo" class="intro-video" src="./img/video.mp4" type="video/mp4" muted autoplay playsinline
+      preload="auto"></video>
+
+    <!-- Si prefieres dejar poster, usa uno transparente: -->
+    <!-- poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" -->
+
+    <div id="soundLayer" class="intro-sound-layer" aria-hidden="true"></div>
+    <!-- ← AÑADIDO -->
+
+    <button id="skipIntro" class="btn intro-skip" aria-label="Saltar intro">
+      Saltar
+    </button>
+  </div>
+  <div id="butterflies" aria-hidden="true"></div>
+
+  <!-- ======= AUDIO / MÚSICA ======= -->
+  <div class="audio-bar">
+    <button class="btn" id="btnAudio">
+      <img src="./img/iconos/musica.png" alt="Icono de música" class="icono-musica" />
+      Reproducir canción
+    </button>
+    <audio id="song" src="./img/Reality.mp3" preload="auto" autoplay muted playsinline></audio>
+  </div>
+
+
+
+  <header class="wrap hero">
+    <div class="grid" style="
+          width: 100%;
+          align-items: center;
+          grid-template-columns: 1fr;
+          gap: 22px;
+          text-align: center;
+        ">
+      <div>
+
+        <div class="pill">
+          <img src="./img/texto.png" alt="Mis XV Años" style="max-width: 270px; height: auto;" />
+        </div>
+
+      </div>
+  </header>
+
+  <section class="wrap hero-wrap">
+    <div class="hero-stack">
+      <h1 class="hero-stack__name">
+        <img src="./img/nombre.png" alt="Ximena Adilene" class="hero-name-img" />
+      </h1>
+      <div class="video-box">
+        <video class="hero-video" src="./img/videoPrincipal.mp4" autoplay muted loop playsinline webkit-playsinline
+          preload="auto"></video>
+      </div>
+  </section>
+
+  <section class="wrap info">
+    <div class="title-script">Con mucho amor</div>
+    <p class="center">
+      Con la bendición de Dios y el apoyo de mis padres
+      <strong>Héctor Miguel González Méndez</strong> y
+      <strong>Nadia Paola Montiel Vidal</strong>, y de mi madrina
+      <strong>Jaqueline Montiel Sánchez</strong>, te invito a celebrar
+      conmigo mis XV años.
+    </p>
+    <div class="row">
+  </section>
+  <!-- ===== LUGARES ===== -->
+  <section class="wrap card" id="hashtag">
+    <div class="title-script">Iglesia</div>
+    <div class="row">
+      <div class="card center">
+        <img class="icon-round" src="./img/iconos/iglesia.png" alt="Iglesia" />
+
+        <h3 class="sub">Ceremonia religiosa</h3>
+        <p class="muted">
+          Parroquia Santos Reyes Magos<br />
+          <strong>4:00 p.m.</strong>
+        </p>
+        <a class="btn" target="_blank" href="https://maps.app.goo.gl/JenLTDAq5JHbAQ6G9?g_st=aw">Ver en Google Maps</a>
+      </div>
+      <div style="height: 36px;"></div>
+      <div class="title-script">Salón</div>
+      <div class="row">
+        <div class="card center">
+          <img class="icon-round" src="./img/iconos/recepcion.png" alt="Iglesia" />
+
+          <h3 class="sub">Recepción</h3>
+          <p class="muted">
+            Auditorio de San Sebastián Chimalpa<br />
+            <strong>7:00 p.m.</strong><br />
+            Vals a las <strong>10:00 p.m.</strong>
+          </p>
+          <a class="btn" target="_blank" href="https://maps.app.goo.gl/zyinSK5u2NH92FdYA?g_st=aw">Ver en Google Maps</a>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="wrap card" id="contador">
+    <div class="title-script">Solo faltan</div>
+    <div class="countdown" aria-live="polite">
+      <div class="cd-item">
+        <div class="cd-box" id="d">0</div>
+        <div class="cd-label">Días</div>
+      </div>
+      <div class="cd-item">
+        <div class="cd-box" id="h">0</div>
+        <div class="cd-label">Horas</div>
+      </div>
+      <div class="cd-item">
+        <div class="cd-box" id="m">0</div>
+        <div class="cd-label">Minutos</div>
+      </div>
+      <div class="cd-item">
+        <div class="cd-box" id="s">0</div>
+        <div class="cd-label">Segundos</div>
+      </div>
+    </div>
+    <div class="center" style="margin-top: 16px">
+      <a class="btn btn-fill" id="btnCalendario" href="#" download="XV_Ximena.ics">Agendar en mi calendario</a>
+    </div>
+  </section>
+  <section class="wrap card">
+    <div class="title-script">Itinerario</div>
+    <div class="timeline">
+      <div class="t-row">
+        <div class="t-left">
+          <div class="t-item">
+            Ceremonia — <span class="t-time">4:00 p.m.</span>
+          </div>
+        </div>
+        <div class="dot" style="top: 10%"></div>
+        <div class="t-right">
+          <div class="t-item right">
+            Recepción — <span class="t-time">7:00 p.m.</span>
+          </div>
+        </div>
+      </div>
+      <div class="t-row">
+        <div class="t-left">
+          <div class="t-item">
+            Cena — <span class="t-time">8:30 p.m.</span>
+          </div>
+        </div>
+        <div class="dot" style="top: 50%"></div>
+        <div class="t-right">
+          <div class="t-item right">
+            Vals — <span class="t-time">10:00 p.m.</span>
+          </div>
+        </div>
+      </div>
+      <div class="t-row">
+        <div class="t-left">
+          <div class="t-item">
+            Cierre — <span class="t-time">1:30 a.m.</span>
+          </div>
+        </div>
+        <div class="dot" style="top: 90%"></div>
+        <div class="t-right">
+          <div class="t-item right">Baile • Diversión ✨</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="wrap card"> <!-- Galería -->
+
+    <div class="title-script">Galería</div>
+    <div class="carousel" id="carousel">
+      <div class="track" id="track">
+        <!-- 3 -->
+        <div class="slide">
+          <img src="./img/1.png" alt="Ximena - sesión 3" loading="lazy" />
+        </div>
+        <!-- 4 -->
+        <div class="slide">
+          <img src="./img/2.png" alt="Ximena - sesión 4" loading="lazy" />
+        </div>
+        <!-- 5 -->
+        <div class="slide">
+          <img src="./img/3.png" alt="Ximena - sesión 5" loading="lazy" />
+        </div>
+        <!-- 6 -->
+        <div class="slide">
+          <img src="./img/4.png" alt="Ximena - sesión 6" loading="lazy" />
+        </div>
+        <!-- 7 -->
+        <div class="slide">
+          <img src="./img/5.png" alt="Ximena - sesión 7" loading="lazy" />
+        </div>
+        <!-- 8 -->
+        <div class="slide">
+          <img src="./img/6.png" alt="Ximena - sesión 8" loading="lazy" />
+        </div>
+        <!-- 8 -->
+        <div class="slide">
+          <img src="./img/7.png" alt="Ximena - sesión 8" loading="lazy" />
+        </div>
+        <!-- 8 -->
+        <div class="slide">
+          <img src="./img/8.png" alt="Ximena - sesión 8" loading="lazy" />
+        </div>
+      </div>
+
+      <div class="nav">
+        <button id="prev">‹</button>
+        <button id="next">›</button>
+      </div>
+    </div>
+    <div class="dots" id="dots" aria-label="Indicadores del carrusel"></div>
+  </section>
+
+  <!--<section class="wrap card">
+    <div class="title-script">Obsequios</div>
+    <div class="grid grid-2">
+      <div>
+        <h4 class="sub">Lluvia de sobres</h4>
+        <p class=" textColor">
+          Si deseas obsequiarme algo, la tradición de
+          <em>lluvia de sobres</em> será bienvenida con mucho cariño.
+        </p>
+      </div>
+      <div>
+        <h4 class="sub">Regalo sorpresa</h4>
+        <p class=" textColor">
+          Cualquier detalle que nazca de tu corazón será un hermoso recuerdo
+          de este día.
+        </p>
+      </div>
+    </div>
+  </section> -->
+
+  <!-- ===== HASHTAG ===== -->
+  <section class="wrap card" id="hashtag">
+    <div class="title-script">Hashtag</div>
+    <p class="center">
+      Comparte tus fotos usando <strong id="hashTagText">#XVDeXimena2025</strong>.
+      ¡Quiero ver tus momentos favoritos!
+    </p>
+
+    <!-- Controles -->
+    <div class="controls" role="group" aria-label="Acciones de hashtag">
+      <label class="btn" for="photoInput">📸 Seleccionar fotos</label>
+      <button class="btn" id="copyHash">📋 Copiar hashtag</button>
+      <button class="btn" id="clearPhotos">🧹 Limpiar</button>
+    </div>
+    <input id="photoInput" type="file" accept="image/*" multiple hidden />
+
+
+    <!-- Separador -->
+    <div class="sep-20"></div>
+
+    <!-- Dropzone -->
+    <div id="dropzone" class="dropzone" aria-label="Arrastra y suelta tus fotos aquí">
+      Arrastra y suelta tus fotos aquí<br />
+      <small class="muted">(o usa el botón “Seleccionar fotos”)</small>
+    </div>
+
+    <!-- Separador -->
+    <div class="sep-24"></div>
+
+    <!-- Galería de previews (si la usas) -->
+    <div id="uploadGrid" class="upload-grid" aria-live="polite"></div>
+
+    <!-- Botón que aparece cuando hay más de 9 fotos -->
+    <div class="center sep-16">
+      <button id="btnAlbum" class="btn" style="display:none">📚 Ver álbum</button>
+    </div>
+
+    <!-- Mural visible 3×3 -->
+    <section class="card" id="mural" style="margin-top: 8px;">
+      <div class="title-script">Mural de fotos</div>
+      <div id="muralGrid" class="mural-grid fit-cover" aria-live="polite"></div>
+    </section>
+
+    <!-- Modal Álbum -->
+    <div id="albumModal" class="album-modal" aria-hidden="true">
+      <div class="album-backdrop"></div>
+      <div class="album-content">
+        <div class="album-header">
+          <h3>Álbum de fotos</h3>
+          <button id="closeAlbum" class="btn">Cerrar</button>
+        </div>
+        <div id="albumGrid" class="album-grid fit-cover"></div>
+      </div>
+    </div>
+
+    <!-- Visor (lightbox) -->
+    <div id="viewer" class="viewer" aria-hidden="true">
+      <div class="viewer-backdrop"></div>
+      <div class="viewer-content">
+        <img id="viewerImg" alt="" />
+        <div class="viewer-actions">
+          <button id="btnDownload" class="btn">⬇️ Descargar</button>
+          <button id="btnCloseViewer" class="btn">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== MESA DE REGALOS ===== -->
+  <section class="wrap card">
+    <div class="title-script">Mesa de regalos</div>
+
+    <!-- QR Mesa de Regalos -->
+    <div class="qr-wrap center" id="mesa">
+      <div id="qrMesa" class="qr-box" aria-label="QR Mesa de regalos"></div>
+      <div style="margin-top:10px">
+        <button id="btnDescargarQR" class="btn">
+          <img src="./img/iconos/descargar.png" alt="Descargar QR" class="icono-boton">
+          Descargar QR
+        </button>
+
+      </div>
+      <small class="muted d-block" style="display:block;margin-top:6px">
+        Escanéame para abrir la Mesa de regalos
+      </small>
+    </div>
+  </section>
+
+  <!-- ===== CONFIRMACIÓN ===== -->
+  <section class="wrap center rsvp">
+    <div class="title-script">Confirmación</div>
+    <p class="muted">
+      ¿Me acompañas en este día tan especial? 💖<br />
+      Por favor confirma tu asistencia enviando un mensaje por WhatsApp.
+    </p>
+    <div class="confirmacion-botones">
+      <a href="https://wa.me/..." class="btn btn-fill">
+        <img src="./img/iconos/cara-feliz.png" alt="Asistiré" class="icono-boton">
+        Asistiré
+      </a>
+
+      <a href="https://wa.me/..." class="btn">
+        <img src="./img/iconos/emoji.png" alt="No podré ir" class="icono-boton">
+        No podré ir
+      </a>
+    </div>
+
+  </section>
+
+  <!-- ===== Footer final con chip de WhatsApp (no borra el anterior) ===== -->
+  <footer class="container text-center py-4">
+    <small class="d-block mb-2">
+      © 2025 • Hecho por
+      <img src="./img/iconos/girasol.png" alt="LAC logo" class="icono-lac">
+      <strong>LAC</strong> — Invitaciones digitales
+    </small>
+
+    <!-- Chip discreto de WhatsApp -->
+    <a href="https://wa.me/525534633490?text=Hola%20Laura,%20me%20gustaría%20saber%20más%20sobre%20las%20tarjetas%20digitales."
+      target="_blank" rel="noopener noreferrer" class="wa-chip">
+      <img src="./img/iconos/whats.png" alt="WhatsApp" class="icono-whats">
+      Pide La tuya
+    </a>
+  </footer>
+
+  <!-- Tu JS externo -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="./app.js"></script>
+
+</body>
+
+</html>
