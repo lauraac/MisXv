@@ -484,10 +484,8 @@ const LIMIT = 200; // tope visual
 
 // --- REST: listar/subir contra GAS ---
 async function fetchFotosServer() {
-  const res = await fetch(GAS_URL, {
-    method: "GET",
-    headers: { "cache-control": "no-cache" },
-  });
+  const res = await fetch(GAS_URL, { method: "GET" });
+
   if (!res.ok) throw new Error(`list_failed (${res.status})`);
   const data = await res.json().catch(() => ({}));
   return data.items || []; // [{id,name,createdTime,url}]
@@ -499,8 +497,8 @@ async function uploadOne(file) {
 
   const res = await fetch(GAS_URL, {
     method: "POST",
-    body: fd, // <-- sin headers
-    mode: "cors",
+    body: fd, // ← SIN headers
+    // mode: "cors",      // ← quítalo para evitar preflight innecesario
   });
 
   if (!res.ok) throw new Error(`Upload HTTP ${res.status}`);
