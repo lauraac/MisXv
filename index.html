@@ -379,9 +379,17 @@
       Por favor confirma tu asistencia enviando un mensaje por WhatsApp.
     </p>
 
+    <!-- Campo para escribir cantidad de personas -->
+    <div class="input-group" style="margin-bottom: 15px;">
+      <label for="numPersonas" style="display:block;margin-bottom:5px;font-weight:600;">
+        ¿Cuántas personas asistirán?
+      </label>
+      <input type="number" id="numPersonas" placeholder="Ejemplo: 4" min="1" max="20"
+        style="padding:10px 12px;border-radius:8px;border:1px solid #ccc;text-align:center;width:150px;" />
+    </div>
+
     <div class="confirmacion-botones">
-      <a href="https://wa.me/525581587467?text=%C2%A1Hola!%20Confirmo%20mi%20asistencia%20🎉" class="btn btn-fill"
-        target="_blank" rel="noopener">
+      <a id="btnAsistire" href="#" class="btn btn-fill" target="_blank" rel="noopener">
         <img src="./img/iconos/cara-feliz.png" alt="Asistiré" class="icono-boton">
         Asistiré
       </a>

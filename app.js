@@ -839,4 +839,19 @@ async function uploadOne(file) {
     }
     makeFinal();
   });
+  const select = document.getElementById("numPersonas");
+  const btnAsistire = document.getElementById("btnAsistire");
+  const numeroWhatsApp = "525581587467";
+
+  btnAsistire.addEventListener("click", (e) => {
+    e.preventDefault();
+    const num = select.value;
+    const mensaje = `¡Hola! Confirmo mi asistencia 🎉\nSeremos ${num} persona${
+      num > 1 ? "s" : ""
+    } en total.`;
+    const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(
+      mensaje
+    )}`;
+    window.open(url, "_blank");
+  });
 })();
