@@ -493,16 +493,13 @@ async function fetchFotosServer() {
 
 // ⬇️ SOLO dentro de la función, no fuera
 async function uploadOne(file) {
-  if (!(file instanceof File)) {
-    throw new Error("No viene un File válido");
-  }
-  if (file.size > 8 * 1024 * 1024) {
+  if (!(file instanceof File)) throw new Error("No viene un File válido");
+  if (file.size > 8 * 1024 * 1024)
     throw new Error("La foto es muy grande (>8MB). Reduce el tamaño.");
-  }
 
   const dataBase64 = await new Promise((resolve, reject) => {
     const r = new FileReader();
-    r.onload = () => resolve(r.result); // "data:image/...;base64,XXXX"
+    r.onload = () => resolve(r.result);
     r.onerror = reject;
     r.readAsDataURL(file);
   });
@@ -515,7 +512,7 @@ async function uploadOne(file) {
 
   const res = await fetch(GAS_URL, {
     method: "POST",
-    body: JSON.stringify(payload), // sin headers
+    body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error(`Upload HTTP ${res.status}`);
 
