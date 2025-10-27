@@ -483,24 +483,26 @@ const VISIBLE = 6; // fotos visibles en mural
 const LIMIT = 200; // tope visual
 
 // --- REST: listar/subir contra GAS ---
+// --- REST: listar/subir contra GAS ---
 async function fetchFotosServer() {
   const res = await fetch(GAS_URL, { method: "GET" });
   if (!res.ok) throw new Error(`list_failed (${res.status})`);
   const data = await res.json().catch(() => ({}));
   return data.items || [];
 }
-if (file.size > 8 * 1024 * 1024) {
-  throw new Error("La foto es muy grande (>8MB). Reduce el tamaño.");
-}
 
+// ⬇️ SOLO dentro de la función, no fuera
 async function uploadOne(file) {
+  if (!(file instanceof File)) {
+    throw new Error("No viene un File válido");
+  }
   if (file.size > 8 * 1024 * 1024) {
-    // 8 MB
     throw new Error("La foto es muy grande (>8MB). Reduce el tamaño.");
   }
+
   const dataBase64 = await new Promise((resolve, reject) => {
     const r = new FileReader();
-    r.onload = () => resolve(r.result);
+    r.onload = () => resolve(r.result); // "data:image/...;base64,XXXX"
     r.onerror = reject;
     r.readAsDataURL(file);
   });
@@ -513,13 +515,11 @@ async function uploadOne(file) {
 
   const res = await fetch(GAS_URL, {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: JSON.stringify(payload), // sin headers
   });
   if (!res.ok) throw new Error(`Upload HTTP ${res.status}`);
 
   const json = await res.json().catch(() => null);
-
-  // 👇 FIX: aquí decía json2.error y truena SIEMPRE
   if (!json || !json.ok || !json.url) {
     console.error("Respuesta GAS:", json);
     throw new Error((json && json.error) || "Upload inválido");
