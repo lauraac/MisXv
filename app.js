@@ -266,23 +266,22 @@ setInterval(tick, 1000);
 
 /* ====== GENERAR ICS (Añadir a calendario) ====== */
 function buildICS() {
-  const dtstart = "20251220T170000";
-  const dtend = "20251220T233000";
   const ics = `BEGIN:VCALENDAR
 VERSION:2.0
+PRODID:-//Invitaciones LAC//Mis XV//ES
 BEGIN:VEVENT
-DTSTAMP:${dtstart}Z
-DTSTART:${dtstart}Z
-DTEND:${dtend}Z
-SUMMARY:XV de Ximena Adilene
+DTSTAMP:20251201T120000
+DTSTART;TZID=America/Mexico_City:20251220T160000
+DTEND;TZID=America/Mexico_City:20251220T170000
+SUMMARY:XV de Ximena Adilene — Misa
 LOCATION:Parroquia de nuestra Señora de San Juan de los Lagos
-DESCRIPTION:¡Acompáñanos a celebrar! Ceremonia 5:00 p.m. y recepción posterior.
+DESCRIPTION:¡Acompáñanos a celebrar! Ceremonia 4:00 p.m. y recepción posterior.
 END:VEVENT
 END:VCALENDAR`.replace(/\n/g, "\r\n");
+
   const blob = new Blob([ics], { type: "text/calendar" });
   const url = URL.createObjectURL(blob);
-  const a = document.getElementById("btnCalendario");
-  a.href = url;
+  document.getElementById("btnCalendario").href = url;
 }
 buildICS();
 
