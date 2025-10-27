@@ -493,32 +493,36 @@ async function fetchFotosServer() {
 
 // ⬇️ SOLO dentro de la función, no fuera
 async function uploadOne(file) {
-  if (!(file instanceof File)) throw new Error("No viene un File válido");
-  if (file.size > 8 * 1024 * 1024)
+  if (file.size > 8 * 1024 * 1024) {
     throw new Error("La foto es muy grande (>8MB). Reduce el tamaño.");
+  }
 
+  // 1) Archivo → dataURL
   const dataBase64 = await new Promise((resolve, reject) => {
     const r = new FileReader();
-    r.onload = () => resolve(r.result);
+    r.onload = () => resolve(r.result); // "data:image/...;base64,XXXX"
     r.onerror = reject;
     r.readAsDataURL(file);
   });
 
+  // 2) Payload
   const payload = {
     name: file.name,
     mimeType: file.type || "image/jpeg",
     dataBase64,
   };
 
+  // 3) POST simple (sin headers) => text/plain por defecto (evita preflight)
   const res = await fetch(GAS_URL, {
     method: "POST",
     body: JSON.stringify(payload),
   });
+
   if (!res.ok) throw new Error(`Upload HTTP ${res.status}`);
 
   const json = await res.json().catch(() => null);
+  console.log("Respuesta GAS:", json); // ← ayuda a depurar
   if (!json || !json.ok || !json.url) {
-    console.error("Respuesta GAS:", json);
     throw new Error((json && json.error) || "Upload inválido");
   }
   return json.url;
