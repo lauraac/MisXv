@@ -3,12 +3,6 @@ const btnAudio = document.getElementById("btnAudio");
 const song = document.getElementById("song");
 let playing = false;
 const p = song.play();
-const LS_KEY = "rsvp_count";
-const numeroWhatsApp = "525581587467"; // +52 México + tu número
-const input = document.getElementById("numPersonas");
-const btnConfirmar = document.getElementById("btnConfirmar");
-const btnAsistire = document.getElementById("btnAsistire");
-const estadoCantidad = document.getElementById("estadoCantidad");
 
 const ICON_PLAY =
   '<img src="./img/iconos/musica.png" alt="Reproducir" class="icono-musica">';
@@ -27,50 +21,7 @@ if (!window.__musicInit) {
       ? ICON_PAUSE + "Pausar canción"
       : ICON_PLAY + "Reproducir canción";
   }
-  const saved = localStorage.getItem(LS_KEY);
-  if (saved) {
-    input.value = saved;
-    estadoCantidad.textContent = `Cantidad guardada: ${saved} persona${
-      saved > 1 ? "s" : ""
-    }.`;
-  }
 
-  // Guardar cantidad al confirmar
-  btnConfirmar.addEventListener("click", () => {
-    const val = (input.value || "").trim();
-    const num = parseInt(val, 10);
-
-    if (!val || isNaN(num) || num < 1 || num > 20) {
-      alert("Ingresa un número válido entre 1 y 20 ✨");
-      input.focus();
-      return;
-    }
-    localStorage.setItem(LS_KEY, String(num));
-    estadoCantidad.textContent = `Cantidad guardada: ${num} persona${
-      num > 1 ? "s" : ""
-    }.`;
-  });
-
-  // Armar WhatsApp con la cantidad guardada
-  btnAsistire.addEventListener("click", (e) => {
-    e.preventDefault();
-    const stored = parseInt(localStorage.getItem(LS_KEY) || "", 10);
-
-    if (!stored || isNaN(stored) || stored < 1) {
-      alert("Primero escribe la cantidad y presiona Confirmar 💕");
-      input.focus();
-      return;
-    }
-
-    const mensaje =
-      `¡Hola! Confirmo mi asistencia 🎉\n` +
-      `Seremos ${stored} persona${stored > 1 ? "s" : ""} en total.`;
-
-    const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(
-      mensaje
-    )}`;
-    window.open(url, "_blank");
-  });
   btnAudio.addEventListener("click", async () => {
     try {
       if (song.paused) {
@@ -887,5 +838,76 @@ async function uploadOne(file) {
       else drawQR();
     }
     makeFinal();
+  });
+})();
+/* ====== RSVP (WhatsApp con cantidad) ====== */
+(function initRSVP() {
+  const LS_KEY = "rsvp_count";
+  const numeroWhatsApp = "525581587467";
+
+  // Espera a que el DOM esté listo
+  const onReady = (fn) =>
+    document.readyState !== "loading"
+      ? fn()
+      : document.addEventListener("DOMContentLoaded", fn);
+
+  onReady(() => {
+    const input = document.getElementById("numPersonas");
+    const btnConfirmar = document.getElementById("btnConfirmar");
+    const btnAsistire = document.getElementById("btnAsistire");
+    const estadoCantidad = document.getElementById("estadoCantidad");
+
+    // Si la sección no existe en esta página, sal sin error
+    if (!input || !btnConfirmar || !btnAsistire) return;
+
+    // Cargar cantidad guardada (si existe)
+    const saved = localStorage.getItem(LS_KEY);
+    if (saved) {
+      input.value = saved;
+      if (estadoCantidad) {
+        estadoCantidad.textContent = `Cantidad guardada: ${saved} persona${
+          saved > 1 ? "s" : ""
+        }.`;
+      }
+    }
+
+    // Guardar cantidad al confirmar
+    btnConfirmar.addEventListener("click", () => {
+      const val = (input.value || "").trim();
+      const num = parseInt(val, 10);
+
+      if (!val || isNaN(num) || num < 1 || num > 20) {
+        alert("Ingresa un número válido entre 1 y 20 ✨");
+        input.focus();
+        return;
+      }
+      localStorage.setItem(LS_KEY, String(num));
+      if (estadoCantidad) {
+        estadoCantidad.textContent = `Cantidad guardada: ${num} persona${
+          num > 1 ? "s" : ""
+        }.`;
+      }
+    });
+
+    // Armar WhatsApp con la cantidad guardada
+    btnAsistire.addEventListener("click", (e) => {
+      e.preventDefault();
+
+      const stored = parseInt(localStorage.getItem(LS_KEY) || "", 10);
+      if (!stored || isNaN(stored) || stored < 1) {
+        alert("Primero escribe la cantidad y presiona Confirmar 💕");
+        input.focus();
+        return;
+      }
+
+      const mensaje =
+        `¡Hola! Confirmo mi asistencia 🎉\n` +
+        `Seremos ${stored} persona${stored > 1 ? "s" : ""} en total.`;
+
+      const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(
+        mensaje
+      )}`;
+      window.open(url, "_blank");
+    });
   });
 })();
