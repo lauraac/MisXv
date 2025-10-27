@@ -500,7 +500,8 @@ async function uploadOne(file) {
 
   const res = await fetch(GAS_URL, {
     method: "POST",
-    body: fd,
+    body: fd, // <-- sin headers
+    mode: "cors",
   });
 
   if (!res.ok) throw new Error(`Upload HTTP ${res.status}`);
