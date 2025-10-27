@@ -840,12 +840,12 @@ async function uploadOne(file) {
     makeFinal();
   });
 })();
-/* ====== RSVP (WhatsApp con cantidad) ====== */
+/* ====== RSVP (WhatsApp con cantidad + bloqueo tras confirmar) ====== */
 (function initRSVP() {
   const LS_KEY = "rsvp_count";
-  const numeroWhatsApp = "525581587467";
+  const LS_LOCK = "rsvp_locked";
+  const numeroWhatsApp = "525662707377";
 
-  // Espera a que el DOM esté listo
   const onReady = (fn) =>
     document.readyState !== "loading"
       ? fn()
@@ -857,53 +857,63 @@ async function uploadOne(file) {
     const btnAsistire = document.getElementById("btnAsistire");
     const estadoCantidad = document.getElementById("estadoCantidad");
 
-    // Si la sección no existe en esta página, sal sin error
     if (!input || !btnConfirmar || !btnAsistire) return;
 
-    // Cargar cantidad guardada (si existe)
+    function lockUI() {
+      input.disabled = true;
+      btnConfirmar.disabled = true;
+      if (estadoCantidad)
+        estadoCantidad.textContent = `Cantidad confirmada: ${localStorage.getItem(
+          LS_KEY
+        )} persona${
+          parseInt(localStorage.getItem(LS_KEY), 10) > 1 ? "s" : ""
+        }.`;
+    }
+
+    function unlockUI() {
+      input.disabled = false;
+      btnConfirmar.disabled = false;
+    }
+
+    // Restaurar estado guardado
     const saved = localStorage.getItem(LS_KEY);
+    const locked = localStorage.getItem(LS_LOCK) === "1";
     if (saved) {
       input.value = saved;
       if (estadoCantidad) {
-        estadoCantidad.textContent = `Cantidad guardada: ${saved} persona${
-          saved > 1 ? "s" : ""
-        }.`;
+        estadoCantidad.textContent = locked
+          ? `Cantidad confirmada: ${saved} persona${saved > 1 ? "s" : ""}.`
+          : `Cantidad guardada: ${saved} persona${saved > 1 ? "s" : ""}.`;
       }
     }
+    if (locked) lockUI();
 
-    // Guardar cantidad al confirmar
+    // Confirmar y BLOQUEAR
     btnConfirmar.addEventListener("click", () => {
       const val = (input.value || "").trim();
       const num = parseInt(val, 10);
-
       if (!val || isNaN(num) || num < 1 || num > 20) {
         alert("Ingresa un número válido entre 1 y 20 ✨");
         input.focus();
         return;
       }
       localStorage.setItem(LS_KEY, String(num));
-      if (estadoCantidad) {
-        estadoCantidad.textContent = `Cantidad guardada: ${num} persona${
-          num > 1 ? "s" : ""
-        }.`;
-      }
+      localStorage.setItem(LS_LOCK, "1"); // ← marca bloqueado
+      lockUI();
     });
 
-    // Armar WhatsApp con la cantidad guardada
+    // Armar WhatsApp con la cantidad confirmada
     btnAsistire.addEventListener("click", (e) => {
       e.preventDefault();
-
       const stored = parseInt(localStorage.getItem(LS_KEY) || "", 10);
       if (!stored || isNaN(stored) || stored < 1) {
         alert("Primero escribe la cantidad y presiona Confirmar 💕");
         input.focus();
         return;
       }
-
       const mensaje =
         `¡Hola! Confirmo mi asistencia 🎉\n` +
         `Seremos ${stored} persona${stored > 1 ? "s" : ""} en total.`;
-
       const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(
         mensaje
       )}`;
