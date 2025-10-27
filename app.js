@@ -485,20 +485,30 @@ const LIMIT = 200; // tope visual
 // --- REST: listar/subir contra GAS ---
 async function fetchFotosServer() {
   const res = await fetch(GAS_URL, { method: "GET" });
-
   if (!res.ok) throw new Error(`list_failed (${res.status})`);
   const data = await res.json().catch(() => ({}));
-  return data.items || []; // [{id,name,createdTime,url}]
+  return data.items || [];
 }
 
 async function uploadOne(file) {
-  const fd = new FormData();
-  fd.append("file", file, file.name);
+  // 1) Lee el archivo como dataURL
+  const dataBase64 = await new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result); // "data:image/...;base64,XXXX"
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+
+  // 2) Envía JSON como text/plain (simple request, sin preflight)
+  const payload = {
+    name: file.name,
+    mimeType: file.type || "image/jpeg",
+    dataBase64,
+  };
 
   const res = await fetch(GAS_URL, {
     method: "POST",
-    body: fd, // ← SIN headers
-    // mode: "cors",      // ← quítalo para evitar preflight innecesario
+    body: JSON.stringify(payload), // <- sin headers => text/plain por defecto
   });
 
   if (!res.ok) throw new Error(`Upload HTTP ${res.status}`);
