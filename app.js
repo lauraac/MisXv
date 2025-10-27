@@ -919,5 +919,14 @@ async function uploadOne(file) {
       )}`;
       window.open(url, "_blank");
     });
+    const btnCambiar = document.getElementById("btnCambiar");
+    btnCambiar?.addEventListener("click", () => {
+      localStorage.setItem(LS_LOCK, "0");
+      unlockUI();
+      if (estadoCantidad)
+        estadoCantidad.textContent =
+          "Puedes editar la cantidad y volver a confirmar.";
+      input.focus();
+    });
   });
 })();
