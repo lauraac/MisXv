@@ -275,7 +275,7 @@ DTSTAMP:${dtstart}Z
 DTSTART:${dtstart}Z
 DTEND:${dtend}Z
 SUMMARY:XV de Ximena Adilene
-LOCATION:Parroquia Santos Reyes Magos y Auditorio San Sebastián Chimalpa
+LOCATION:Parroquia de nuestra Señora de San Juan de los Lagos
 DESCRIPTION:¡Acompáñanos a celebrar! Ceremonia 5:00 p.m. y recepción posterior.
 END:VEVENT
 END:VCALENDAR`.replace(/\n/g, "\r\n");
