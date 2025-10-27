@@ -841,10 +841,11 @@ async function uploadOne(file) {
   });
 })();
 /* ====== RSVP (WhatsApp con cantidad + bloqueo tras confirmar) ====== */
+/* ====== RSVP (WhatsApp + borrar en cada visita + Cambiar) ====== */
 (function initRSVP() {
   const LS_KEY = "rsvp_count";
   const LS_LOCK = "rsvp_locked";
-  const numeroWhatsApp = "525662707377";
+  const numeroWhatsApp = "525662707377"; // 52 + 10 dígitos
 
   const onReady = (fn) =>
     document.readyState !== "loading"
@@ -856,39 +857,43 @@ async function uploadOne(file) {
     const btnConfirmar = document.getElementById("btnConfirmar");
     const btnAsistire = document.getElementById("btnAsistire");
     const estadoCantidad = document.getElementById("estadoCantidad");
+    const btnCambiar = document.getElementById("btnCambiar");
 
     if (!input || !btnConfirmar || !btnAsistire) return;
 
-    function lockUI() {
+    // 🔄 Borra siempre al entrar (nuevo load)
+    localStorage.removeItem(LS_KEY);
+    localStorage.removeItem(LS_LOCK);
+
+    // Estado inicial (editable, sin confirmar)
+    input.disabled = false;
+    btnConfirmar.disabled = false;
+    btnAsistire.disabled = true; // hasta confirmar
+    if (estadoCantidad)
+      estadoCantidad.textContent = "Ingresa la cantidad y presiona Confirmar.";
+
+    function lockUI(num) {
       input.disabled = true;
       btnConfirmar.disabled = true;
-      if (estadoCantidad)
-        estadoCantidad.textContent = `Cantidad confirmada: ${localStorage.getItem(
-          LS_KEY
-        )} persona${
-          parseInt(localStorage.getItem(LS_KEY), 10) > 1 ? "s" : ""
+      btnAsistire.disabled = false; // ya puede enviar WhatsApp
+      if (estadoCantidad) {
+        estadoCantidad.textContent = `Cantidad confirmada: ${num} persona${
+          num > 1 ? "s" : ""
         }.`;
+      }
     }
 
     function unlockUI() {
       input.disabled = false;
       btnConfirmar.disabled = false;
+      btnAsistire.disabled = true; // hasta volver a confirmar
+      if (estadoCantidad)
+        estadoCantidad.textContent =
+          "Puedes editar la cantidad y volver a confirmar.";
+      input.focus();
     }
 
-    // Restaurar estado guardado
-    const saved = localStorage.getItem(LS_KEY);
-    const locked = localStorage.getItem(LS_LOCK) === "1";
-    if (saved) {
-      input.value = saved;
-      if (estadoCantidad) {
-        estadoCantidad.textContent = locked
-          ? `Cantidad confirmada: ${saved} persona${saved > 1 ? "s" : ""}.`
-          : `Cantidad guardada: ${saved} persona${saved > 1 ? "s" : ""}.`;
-      }
-    }
-    if (locked) lockUI();
-
-    // Confirmar y BLOQUEAR
+    // Confirmar (guarda SOLO para esta visita) y bloquea edición
     btnConfirmar.addEventListener("click", () => {
       const val = (input.value || "").trim();
       const num = parseInt(val, 10);
@@ -898,11 +903,19 @@ async function uploadOne(file) {
         return;
       }
       localStorage.setItem(LS_KEY, String(num));
-      localStorage.setItem(LS_LOCK, "1"); // ← marca bloqueado
-      lockUI();
+      localStorage.setItem(LS_LOCK, "1");
+      lockUI(num);
     });
 
-    // Armar WhatsApp con la cantidad confirmada
+    // Cambiar (opcional)
+    btnCambiar?.addEventListener("click", () => {
+      localStorage.removeItem(LS_LOCK);
+      localStorage.removeItem(LS_KEY);
+      input.value = "";
+      unlockUI();
+    });
+
+    // Asistiré (usa la cantidad confirmada)
     btnAsistire.addEventListener("click", (e) => {
       e.preventDefault();
       const stored = parseInt(localStorage.getItem(LS_KEY) || "", 10);
@@ -914,19 +927,11 @@ async function uploadOne(file) {
       const mensaje =
         `¡Hola! Confirmo mi asistencia 🎉\n` +
         `Seremos ${stored} persona${stored > 1 ? "s" : ""} en total.`;
-      const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(
+
+      // Más compatible en iOS/PWA:
+      window.location.href = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(
         mensaje
       )}`;
-      window.open(url, "_blank");
-    });
-    const btnCambiar = document.getElementById("btnCambiar");
-    btnCambiar?.addEventListener("click", () => {
-      localStorage.setItem(LS_LOCK, "0");
-      unlockUI();
-      if (estadoCantidad)
-        estadoCantidad.textContent =
-          "Puedes editar la cantidad y volver a confirmar.";
-      input.focus();
     });
   });
 })();
