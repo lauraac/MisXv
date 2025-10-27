@@ -477,7 +477,8 @@ buildICS();
 })();
 /* =====================  HASHTAG (Drive + GAS)  ===================== */
 const GAS_URL =
-  "https://script.google.com/macros/s/AKfycbyrQ1kAaBvDk3rVvX7T9Yh0tXg12345/exec";
+  "https://script.google.com/macros/s/AKfycbzhiO2c_2Zf_4jpbb31W3Uoc3F9Vkey5rL_vb6uwla3xQaD3n3AehJE8lE5j_bGMb_V/exec";
+
 // ← Pega aquí tu URL de Apps Script (la que termina en /exec)
 const VISIBLE = 6; // fotos visibles en mural
 const LIMIT = 200; // tope visual
@@ -494,15 +495,14 @@ async function fetchFotosServer() {
 }
 
 async function uploadOne(file) {
+  const fd = new FormData();
+  fd.append("file", file, file.name);
+
   const res = await fetch(GAS_URL, {
     method: "POST",
-    headers: {
-      "content-type": file.type || "application/octet-stream",
-      "x-filename": file.name || "foto.jpg",
-      "x-content-type": file.type || "image/jpeg",
-    },
-    body: file,
+    body: fd,
   });
+
   if (!res.ok) throw new Error(`Upload HTTP ${res.status}`);
   const json = await res.json().catch(() => null);
   if (!json || !json.ok || !json.url)
