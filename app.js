@@ -4,10 +4,6 @@ const song = document.getElementById("song");
 let playing = false;
 const p = song.play();
 
-// ===== Config =====
-const VISIBLE = 6; // fotos visibles en el mural
-const LIMIT = 200; // máximo total guardado
-
 const ICON_PLAY =
   '<img src="./img/iconos/musica.png" alt="Reproducir" class="icono-musica">';
 const ICON_PAUSE =
@@ -479,237 +475,157 @@ buildICS();
     }
   });
 })();
+/* =====================  HASHTAG (Drive + GAS)  ===================== */
+const GAS_URL = "https://script.google.com/macros/s/XXXXXXXXXXXX/exec"; // ← Pega aquí tu URL de Apps Script (la que termina en /exec)
+const VISIBLE = 6; // fotos visibles en mural
+const LIMIT = 200; // tope visual
+
+// --- REST: listar/subir contra GAS ---
+async function fetchFotosServer() {
+  const res = await fetch(GAS_URL, {
+    method: "GET",
+    headers: { "cache-control": "no-cache" },
+  });
+  if (!res.ok) throw new Error(`list_failed (${res.status})`);
+  const data = await res.json().catch(() => ({}));
+  return data.items || []; // [{id,name,createdTime,url}]
+}
+
 async function uploadOne(file) {
-  const FN = `${location.origin}/.netlify/functions/upload`;
-  const res = await fetch(FN, {
+  const res = await fetch(GAS_URL, {
     method: "POST",
     headers: {
       "content-type": file.type || "application/octet-stream",
       "x-filename": file.name || "foto.jpg",
       "x-content-type": file.type || "image/jpeg",
-      Accept: "application/json",
     },
     body: file,
   });
-
-  // Mejor manejo de errores para ver el detalle
-  if (!res.ok) {
-    const txt = await res.text().catch(() => "");
-    throw new Error(`Upload HTTP ${res.status}: ${txt || "sin detalle"}`);
-  }
-
+  if (!res.ok) throw new Error(`Upload HTTP ${res.status}`);
   const json = await res.json().catch(() => null);
-  if (!json || !json.ok || !json.url) {
-    throw new Error("Respuesta inesperada del servidor");
-  }
-
-  const mias = JSON.parse(localStorage.getItem("fotosSubidas") || "[]");
-  mias.push(json.url);
-  localStorage.setItem("fotosSubidas", JSON.stringify(mias));
+  if (!json || !json.ok || !json.url)
+    throw new Error(json?.error || "Upload inválido");
   return json.url;
 }
 
-async function fetchFotosServer() {
-  const FN = `${location.origin}/.netlify/functions/list-photos`;
-  const res = await fetch(FN);
-  if (!res.ok) throw new Error(`list_failed (${res.status})`);
-  const data = await res.json().catch(() => ({}));
-  return data.items || [];
-}
-
-async function fetchFotosServer() {
-  const res = await fetch("/.netlify/functions/list-photos");
-  if (!res.ok) throw new Error("list_failed");
-  const data = await res.json();
-  return data.items || []; // [{key,url}]
-}
-
-/* ===== Hashtag: subida, mural (6) + Álbum (todas), visor, eliminar ===== */
-(function hashtagWithAlbum() {
+// --- UI hashtag (mural 6 + álbum + visor) ---
+(function hashtagSection() {
   const dz = document.getElementById("dropzone");
   const input = document.getElementById("photoInput");
-  const grid = document.getElementById("uploadGrid");
   const btnCopy = document.getElementById("copyHash");
   const btnClear = document.getElementById("clearPhotos");
   const hashEl = document.getElementById("hashTagText");
 
+  const muralSection = document.getElementById("mural");
   const mural = document.getElementById("muralGrid");
-  const muralSection = document.getElementById("mural"); // <section id="mural">
-  if (muralSection) muralSection.style.display = "none"; // oculto al cargar
-
   const btnAlbum = document.getElementById("btnAlbum");
   const albumModal = document.getElementById("albumModal");
   const albumGrid = document.getElementById("albumGrid");
   const closeAlbum = document.getElementById("closeAlbum");
 
-  const fitSelect = document.getElementById("fitMode");
-  function applyFit(mode) {
-    const cls = mode === "contain" ? "fit-contain" : "fit-cover";
-    [mural, albumGrid].forEach((el) => {
-      el?.classList.remove("fit-cover", "fit-contain");
-      el?.classList.add(cls);
-    });
-  }
-  applyFit(fitSelect?.value || "cover");
-  fitSelect?.addEventListener("change", () => applyFit(fitSelect.value));
+  const viewer = document.getElementById("viewer");
+  const viewerImg = document.getElementById("viewerImg");
+  const btnDownload = document.getElementById("btnDownload");
+  const btnCloseV = document.getElementById("btnCloseViewer");
+  const viewerBackdrop = viewer?.querySelector(".viewer-backdrop");
 
   if (!dz || !input || !mural || !albumGrid) return;
 
-  // Estado (urls en orden de subida)
-  const filesState = []; // { url } // ahora vendrá del servidor
-  // ——— SINCRONIZACIÓN CON EL SERVIDOR ———
-  async function loadFromServer() {
-    try {
-      const items = await fetchFotosServer(); // [{key,url}]
-      // pisamos el estado local con lo del servidor (orden ya viene por sort)
-      filesState.length = 0;
-      for (const it of items) filesState.push({ url: it.url, file: null });
+  const filesState = []; // ascendente: 0=la más vieja
 
-      toggleMuralSection();
-      renderMural();
-      renderAlbum();
-    } catch (e) {
-      console.warn("No se pudo cargar del servidor:", e?.message || e);
-    }
-  }
-
-  // Muestra el <section id="mural"> solo si hay fotos
   function toggleMuralSection() {
-    if (!muralSection) return;
-    muralSection.style.display = filesState.length > 0 ? "" : "none";
+    muralSection.style.display = filesState.length ? "" : "none";
   }
 
-  // Exponla global para que otros módulos (QR) puedan llamarla
-  window.loadFromServer = loadFromServer;
-
-  // Helper: elimina del estado por URL y re-renderiza
-  function removeByUrl(url) {
-    const i = filesState.findIndex((f) => f.url === url);
-    if (i > -1) {
-      try {
-        URL.revokeObjectURL(filesState[i].url);
-      } catch {}
-      filesState.splice(i, 1);
-      renderMural();
-      renderAlbum();
-    }
-  }
-
-  // Render Mural: SOLO las 6 más recientes (con botón eliminar)
   function renderMural() {
     mural.innerHTML = "";
     const last = filesState.slice(-VISIBLE);
-    last.forEach(({ url, file }) => {
+    last.forEach(({ url, name }) => {
       const tile = document.createElement("div");
       tile.className = "tile";
       tile.dataset.url = url;
-
       const img = document.createElement("img");
       img.src = url;
-      img.alt = file?.name || "";
-
-      const del = document.createElement("button");
-      del.type = "button";
-      del.className = "delete-btn";
-      del.title = "Eliminar foto";
-      del.textContent = "🗑️";
-
+      img.alt = name || "";
       tile.appendChild(img);
-      tile.appendChild(del);
       mural.appendChild(tile);
-      toggleMuralSection();
     });
-
-    // Mostrar/ocultar botón Ver más y contador
     const total = filesState.length;
-    if (total > VISIBLE) {
-      btnAlbum.style.display = "";
-      btnAlbum.textContent = `📚 Ver más (${total})`;
-    } else {
-      btnAlbum.style.display = "none";
-    }
+    btnAlbum.style.display = total > VISIBLE ? "" : "none";
+    if (total > VISIBLE) btnAlbum.textContent = `📚 Ver más (${total})`;
+    toggleMuralSection();
   }
 
-  // Render Álbum: TODAS (miniaturas) + botón eliminar en cada una
   function renderAlbum() {
     albumGrid.innerHTML = "";
-    filesState.forEach(({ url, file }) => {
+    filesState.forEach(({ url, name }) => {
       const tile = document.createElement("div");
       tile.className = "tile";
       tile.dataset.url = url;
-
       const img = document.createElement("img");
       img.src = url;
-      img.alt = file?.name || "";
+      img.alt = name || "";
       img.loading = "lazy";
-
-      const del = document.createElement("button");
-      del.type = "button";
-      del.className = "delete-btn";
-      del.title = "Eliminar foto";
-      del.textContent = "🗑️";
-
       tile.appendChild(img);
-      tile.appendChild(del);
       albumGrid.appendChild(tile);
     });
-
-    // Sincroniza el texto del botón por si cambió el total
     const total = filesState.length;
-    if (total > VISIBLE) {
-      btnAlbum.style.display = "";
-      btnAlbum.textContent = `📚 Ver más (${total})`;
-    } else {
-      btnAlbum.style.display = "none";
-    }
+    btnAlbum.style.display = total > VISIBLE ? "" : "none";
+    if (total > VISIBLE) btnAlbum.textContent = `📚 Ver más (${total})`;
   }
-  // Carga inicial desde el servidor y refresca cada 10s
-  loadFromServer();
-  setInterval(loadFromServer, 10000);
 
-  // Añadir foto respetando el LÍMITE (elimina más antiguas si se excede)
-  function addThumb(file) {
-    const url = URL.createObjectURL(file);
-    filesState.push({ file, url });
-
-    while (filesState.length > LIMIT) {
-      const removed = filesState.shift();
-      try {
-        URL.revokeObjectURL(removed.url);
-      } catch {}
+  async function loadFromServer() {
+    try {
+      const items = await fetchFotosServer();
+      filesState.length = 0;
+      // ordena ascendente para que slice(-6) sean las 6 más nuevas
+      items.sort((a, b) => new Date(a.createdTime) - new Date(b.createdTime));
+      for (const it of items.slice(-LIMIT)) {
+        filesState.push({
+          url: it.url,
+          name: it.name,
+          createdTime: it.createdTime,
+        });
+      }
+      renderMural();
+      renderAlbum();
+    } catch (e) {
+      console.warn("No se pudo cargar:", e?.message || e);
     }
-
-    renderMural();
-    renderAlbum();
   }
 
   async function handleFiles(list) {
     const files = Array.from(list || []).filter((f) =>
-      f.type.startsWith("image/")
+      f.type?.startsWith("image/")
     );
     if (!files.length) return;
-
-    for (const f of files) {
-      await uploadOne(f);
-    }
+    for (const f of files) await uploadOne(f);
     await loadFromServer();
     alert("Fotos subidas 💫");
   }
 
-  // Drag & Drop + click
+  // Drag & drop + click
   ["dragenter", "dragover"].forEach((evt) => {
-    dz.addEventListener(evt, (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      dz.classList.add("dragover");
-    });
+    dz.addEventListener(
+      evt,
+      (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dz.classList.add("dragover");
+      },
+      { passive: false }
+    );
   });
   ["dragleave", "drop"].forEach((evt) => {
-    dz.addEventListener(evt, (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      dz.classList.remove("dragover");
-    });
+    dz.addEventListener(
+      evt,
+      (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dz.classList.remove("dragover");
+      },
+      { passive: false }
+    );
   });
   dz.addEventListener("drop", (e) => handleFiles(e.dataTransfer.files));
   dz.addEventListener("click", () => input.click());
@@ -727,38 +643,28 @@ async function fetchFotosServer() {
     }
   });
 
-  // Limpiar todo
+  // Limpiar vista local (no borra en Drive)
   btnClear?.addEventListener("click", () => {
-    filesState.forEach((f) => {
-      try {
-        URL.revokeObjectURL(f.url);
-      } catch {}
-    });
     filesState.length = 0;
-    grid.innerHTML = "";
     renderMural();
     renderAlbum();
   });
 
   // Modal álbum
-  btnAlbum?.addEventListener("click", () => {
-    albumModal.setAttribute("aria-hidden", "false");
-  });
-  document.querySelector(".album-backdrop")?.addEventListener("click", () => {
-    albumModal.setAttribute("aria-hidden", "true");
-  });
-  closeAlbum?.addEventListener("click", () => {
-    albumModal.setAttribute("aria-hidden", "true");
-  });
+  btnAlbum?.addEventListener("click", () =>
+    albumModal.setAttribute("aria-hidden", "false")
+  );
+  document
+    .querySelector(".album-backdrop")
+    ?.addEventListener("click", () =>
+      albumModal.setAttribute("aria-hidden", "true")
+    );
+  closeAlbum?.addEventListener("click", () =>
+    albumModal.setAttribute("aria-hidden", "true")
+  );
 
   // Visor + descarga
-  const viewer = document.getElementById("viewer");
-  const viewerImg = document.getElementById("viewerImg");
-  const btnDownload = document.getElementById("btnDownload");
-  const btnCloseViewer = document.getElementById("btnCloseViewer");
-  const viewerBackdrop = viewer?.querySelector(".viewer-backdrop");
   let currentUrl = null;
-
   function openViewer(url, alt) {
     currentUrl = url;
     viewerImg.src = url;
@@ -770,47 +676,20 @@ async function fetchFotosServer() {
     viewerImg.src = "";
     currentUrl = null;
   }
-
-  // Abrir visor al tocar imagen (mural y álbum) — ignorando clicks en papelera
-  function tileOpenHandler(container) {
-    container.addEventListener("click", (e) => {
-      if (e.target.closest(".delete-btn")) return; // no abrir si es la papelera
-      const tile = e.target.closest(".tile");
-      if (!tile) return;
-      const img = tile.querySelector("img");
+  function tileOpenHandler(c) {
+    c.addEventListener("click", (e) => {
+      const t = e.target.closest(".tile");
+      if (!t) return;
+      const img = t.querySelector("img");
       if (img) openViewer(img.src, img.alt);
     });
   }
   tileOpenHandler(mural);
   tileOpenHandler(albumGrid);
-
-  // Delegación eliminar (mural y álbum)
-  function deleteHandler(container) {
-    container.addEventListener("click", (e) => {
-      const btn = e.target.closest(".delete-btn");
-      if (!btn) return;
-      e.stopPropagation();
-      const tile = btn.closest(".tile");
-      const url = tile?.dataset.url;
-      if (!url) return;
-      if (confirm("¿Estás seguro de que quieres eliminar esta foto?")) {
-        removeByUrl(url);
-      }
-    });
-  }
-  deleteHandler(mural);
-  deleteHandler(albumGrid);
-
-  btnCloseViewer?.addEventListener("click", closeViewer);
+  btnCloseV?.addEventListener("click", closeViewer);
   viewerBackdrop?.addEventListener("click", closeViewer);
-
   btnDownload?.addEventListener("click", () => {
     if (!currentUrl) return;
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    if (isIOS) {
-      window.open(currentUrl, "_blank");
-      return;
-    }
     const a = document.createElement("a");
     a.href = currentUrl;
     a.download = `foto_${Date.now()}.jpg`;
@@ -819,9 +698,25 @@ async function fetchFotosServer() {
     a.remove();
   });
 
-  // Init
-  renderMural();
-  renderAlbum();
+  // “Tiempo real”: cada 3 s, con pausa al ocultar pestaña
+  let poll = null;
+  function start() {
+    if (!poll) poll = setInterval(loadFromServer, 3000);
+  }
+  function stop() {
+    if (poll) {
+      clearInterval(poll);
+      poll = null;
+    }
+  }
+  loadFromServer().then(start);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) stop();
+    else {
+      loadFromServer();
+      start();
+    }
+  });
 })();
 
 /* ===== QR mesa con logo — render offscreen y fijar como <img> ===== */
@@ -941,7 +836,4 @@ async function fetchFotosServer() {
     }
     makeFinal();
   });
-  // Inicializa y refresca cada 10s
-  loadFromServer();
-  setInterval(loadFromServer, 10000);
 })();
