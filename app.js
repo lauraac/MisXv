@@ -489,6 +489,9 @@ async function fetchFotosServer() {
   const data = await res.json().catch(() => ({}));
   return data.items || [];
 }
+if (file.size > 8 * 1024 * 1024) {
+  throw new Error("La foto es muy grande (>8MB). Reduce el tamaño.");
+}
 
 async function uploadOne(file) {
   if (file.size > 8 * 1024 * 1024) {
@@ -515,8 +518,12 @@ async function uploadOne(file) {
   if (!res.ok) throw new Error(`Upload HTTP ${res.status}`);
 
   const json = await res.json().catch(() => null);
-  if (!json || !json.ok || !json.url)
-    throw new Error(json?.error || "Upload inválido");
+
+  // 👇 FIX: aquí decía json2.error y truena SIEMPRE
+  if (!json || !json.ok || !json.url) {
+    console.error("Respuesta GAS:", json);
+    throw new Error((json && json.error) || "Upload inválido");
+  }
   return json.url;
 }
 
