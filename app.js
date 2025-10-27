@@ -476,7 +476,9 @@ buildICS();
   });
 })();
 /* =====================  HASHTAG (Drive + GAS)  ===================== */
-const GAS_URL = "https://script.google.com/macros/s/XXXXXXXXXXXX/exec"; // ← Pega aquí tu URL de Apps Script (la que termina en /exec)
+const GAS_URL =
+  "https://script.google.com/macros/s/AKfycbyrQ1kAaBvDk3rVvX7T9Yh0tXg12345/exec";
+// ← Pega aquí tu URL de Apps Script (la que termina en /exec)
 const VISIBLE = 6; // fotos visibles en mural
 const LIMIT = 200; // tope visual
 
