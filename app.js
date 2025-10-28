@@ -617,7 +617,7 @@ async function uploadOne(file) {
     if (!files.length) return;
     for (const f of files) await uploadOne(f);
     await loadFromServer();
-    alert("Fotos subidas 💫");
+    toast("Fotos subidas 💫");
   }
 
   // Drag & drop + click
@@ -853,6 +853,41 @@ async function uploadOne(file) {
     makeFinal();
   });
 })();
+// Helpers de mensajes
+function showInlineError(inputEl, estadoEl, msg) {
+  if (estadoEl) {
+    estadoEl.textContent = msg;
+    estadoEl.classList.add("error");
+    estadoEl.setAttribute("role", "alert");
+  }
+  if (inputEl) {
+    inputEl.setAttribute("aria-invalid", "true");
+    inputEl.classList.remove("shake");
+    void inputEl.offsetWidth; // reinicia animación
+    inputEl.classList.add("shake");
+  }
+  document
+    .querySelector(".rsvp")
+    ?.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function clearInlineError(inputEl, estadoEl, okMsg) {
+  if (estadoEl) {
+    estadoEl.classList.remove("error");
+    estadoEl.removeAttribute("role");
+    estadoEl.textContent = okMsg || "";
+  }
+  if (inputEl) inputEl.removeAttribute("aria-invalid");
+}
+
+function toast(msg, ms = 1400) {
+  const t = document.getElementById("toast");
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), ms);
+}
+
 /* ====== RSVP (WhatsApp con cantidad + bloqueo tras confirmar) ====== */
 /* ====== RSVP (WhatsApp + borrar en cada visita + Cambiar) ====== */
 (function initRSVP() {
@@ -911,13 +946,25 @@ async function uploadOne(file) {
       const val = (input.value || "").trim();
       const num = parseInt(val, 10);
       if (!val || isNaN(num) || num < 1 || num > 20) {
-        alert("Ingresa un número válido entre 1 y 20 ✨");
-        input.focus();
+        showInlineError(
+          input,
+          estadoCantidad,
+          "Ingresa un número válido entre 1 y 20."
+        );
         return;
       }
       localStorage.setItem(LS_KEY, String(num));
       localStorage.setItem(LS_LOCK, "1");
+
+      // Bloquea edición + esconde teclado
+      input.blur();
+      clearInlineError(
+        input,
+        estadoCantidad,
+        `Cantidad confirmada: ${num} persona${num > 1 ? "s" : ""}.`
+      );
       lockUI(num);
+      toast("Cantidad guardada ✔️");
     });
 
     // Cambiar (opcional)
@@ -925,23 +972,41 @@ async function uploadOne(file) {
       localStorage.removeItem(LS_LOCK);
       localStorage.removeItem(LS_KEY);
       input.value = "";
-      unlockUI();
+      clearInlineError(
+        input,
+        estadoCantidad,
+        "Puedes editar la cantidad y volver a confirmar."
+      );
+      input.disabled = false;
+      btnConfirmar.disabled = false;
+      btnAsistire.disabled = true;
+      input.focus();
     });
 
     // Asistiré (usa la cantidad confirmada)
     btnAsistire.addEventListener("click", (e) => {
       e.preventDefault();
       const stored = parseInt(localStorage.getItem(LS_KEY) || "", 10);
+
       if (!stored || isNaN(stored) || stored < 1) {
-        alert("Primero escribe la cantidad y presiona Confirmar 💕");
+        showInlineError(
+          input,
+          estadoCantidad,
+          "Primero escribe la cantidad y presiona Confirmar."
+        );
         input.focus();
         return;
       }
-      const mensaje =
-        `¡Hola! Confirmo mi asistencia 🎉\n` +
-        `Seremos ${stored} persona${stored > 1 ? "s" : ""} en total.`;
+      clearInlineError(
+        input,
+        estadoCantidad,
+        `Cantidad confirmada: ${stored} persona${stored > 1 ? "s" : ""}.`
+      );
 
-      // Más compatible en iOS/PWA:
+      const mensaje = `¡Hola! Confirmo mi asistencia 🎉\nSeremos ${stored} persona${
+        stored > 1 ? "s" : ""
+      } en total.`;
+      // iOS/Android friendly
       window.location.href = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(
         mensaje
       )}`;
