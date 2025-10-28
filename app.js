@@ -655,7 +655,7 @@ async function uploadOne(file) {
       btnCopy.textContent = "✅ Copiado";
       setTimeout(() => (btnCopy.textContent = "📋 Copiar hashtag"), 1200);
     } catch {
-      alert("Copia manual: " + text);
+      toast("Copia manual: " + text, 2500);
     }
   });
 
