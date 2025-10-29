@@ -476,7 +476,7 @@ buildICS();
 })();
 /* =====================  HASHTAG (Drive + GAS)  ===================== */
 const GAS_URL =
-  "https://script.google.com/macros/s/AKfycbwd_9yJNU_1BZu6QJuZBu8mPM3gSCi9EBO-W3URzOIcIZwA8SgmCOs9Cx_yAtpwmFh2/exec";
+  "https://script.google.com/macros/s/AKfycbzjtyRR5FBNEiapxp3IyBBbouxWcSiZ0BYZR1Dhwa_RQJZc7GZkHZgNhIsaG-z2kEQ/exec";
 
 // ← Pega aquí tu URL de Apps Script (la que termina en /exec)
 const VISIBLE = 6; // fotos visibles en mural
@@ -745,8 +745,10 @@ async function uploadOne(file) {
     try {
       const res = await fetch(GAS_URL, {
         method: "POST",
+        headers: { "Content-Type": "application/json" }, // 👈
         body: JSON.stringify({ action: "delete", id: currentId }),
       });
+
       const json = await res.json().catch(() => ({}));
       if (!res.ok || !json.ok) throw new Error(json.error || "Delete failed");
 
