@@ -483,9 +483,9 @@ const VISIBLE = 6; // fotos visibles en mural
 const LIMIT = 200; // tope visual
 
 // --- REST: listar/subir contra GAS ---
-// --- REST: listar/subir contra GAS ---
 async function fetchFotosServer() {
-  const res = await fetch(GAS_URL, { method: "GET" });
+  // Evita que el navegador use imágenes viejas del caché
+  const res = await fetch(GAS_URL + "?t=" + Date.now(), { method: "GET" });
   if (!res.ok) throw new Error(`list_failed (${res.status})`);
   const data = await res.json().catch(() => ({}));
   return data.items || [];
