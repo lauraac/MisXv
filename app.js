@@ -483,16 +483,12 @@ const VISIBLE = 6; // fotos visibles en mural
 const LIMIT = 200; // tope visual
 
 // --- REST: listar/subir contra GAS ---
+// --- REST: listar/subir contra GAS ---
 async function fetchFotosServer() {
-  const res = await fetch(GAS_URL + "?t=" + Date.now(), { method: "GET" });
+  const res = await fetch(GAS_URL, { method: "GET" });
   if (!res.ok) throw new Error(`list_failed (${res.status})`);
   const data = await res.json().catch(() => ({}));
-  // ⬇️ importante: usar la URL del servidor para el <img>
-  return (data.items || []).map((it) => ({
-    id: it.id,
-    name: it.name,
-    src: it.url, // <- AQUÍ
-  }));
+  return data.items || [];
 }
 
 async function uploadOne(file) {
@@ -557,30 +553,23 @@ async function uploadOne(file) {
     muralSection.style.display = filesState.length ? "" : "none";
   }
 
-  function renderMural(fotos = []) {
-    const grid = document.getElementById("muralGrid");
-    grid.innerHTML = "";
-    fotos.forEach((foto) => {
+  function renderMural() {
+    mural.innerHTML = "";
+    const last = filesState.slice(-VISIBLE);
+    last.forEach(({ url, name }) => {
       const tile = document.createElement("div");
       tile.className = "tile";
-      const img = new Image();
-      img.loading = "lazy";
-      img.decoding = "async";
-      img.alt = foto.name || "foto";
-      // ⬇️ usar la URL que viene de GAS + bust de caché
-      img.src = (foto.src || foto.url) + "&t=" + Date.now();
-
-      // fallback por si Drive da miniatura mejor:
-      img.onerror = () => {
-        if (foto.src && foto.src.includes("/uc?export=view&id=")) {
-          img.src =
-            foto.src.replace("/uc?export=view", "/thumbnail") + "&sz=w800";
-        }
-      };
-
+      tile.dataset.url = url;
+      const img = document.createElement("img");
+      img.src = url;
+      img.alt = name || "";
       tile.appendChild(img);
-      grid.appendChild(tile);
+      mural.appendChild(tile);
     });
+    const total = filesState.length;
+    btnAlbum.style.display = total > VISIBLE ? "" : "none";
+    if (total > VISIBLE) btnAlbum.textContent = `📚 Ver más (${total})`;
+    toggleMuralSection();
   }
 
   function renderAlbum() {
