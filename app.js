@@ -476,7 +476,7 @@ buildICS();
 })();
 /* =====================  HASHTAG (Drive + GAS)  ===================== */
 const GAS_URL =
-  "https://script.google.com/macros/s/AKfycbzMc00TA5YBqhY9mIRGXM2KRhAmFQxBtMvy62135USFcO0EQeDs8Qc_C1KJBCQAuwrj/exec";
+  "https://script.google.com/macros/s/AKfycbwd_9yJNU_1BZu6QJuZBu8mPM3gSCi9EBO-W3URzOIcIZwA8SgmCOs9Cx_yAtpwmFh2/exec";
 
 // ← Pega aquí tu URL de Apps Script (la que termina en /exec)
 const VISIBLE = 6; // fotos visibles en mural
@@ -484,11 +484,15 @@ const LIMIT = 200; // tope visual
 
 // --- REST: listar/subir contra GAS ---
 async function fetchFotosServer() {
-  // Evita que el navegador use imágenes viejas del caché
   const res = await fetch(GAS_URL + "?t=" + Date.now(), { method: "GET" });
   if (!res.ok) throw new Error(`list_failed (${res.status})`);
   const data = await res.json().catch(() => ({}));
-  return data.items || [];
+  // ⬇️ importante: usar la URL del servidor para el <img>
+  return (data.items || []).map((it) => ({
+    id: it.id,
+    name: it.name,
+    src: it.url, // <- AQUÍ
+  }));
 }
 
 async function uploadOne(file) {
@@ -553,23 +557,30 @@ async function uploadOne(file) {
     muralSection.style.display = filesState.length ? "" : "none";
   }
 
-  function renderMural() {
-    mural.innerHTML = "";
-    const last = filesState.slice(-VISIBLE);
-    last.forEach(({ url, name }) => {
+  function renderMural(fotos = []) {
+    const grid = document.getElementById("muralGrid");
+    grid.innerHTML = "";
+    fotos.forEach((foto) => {
       const tile = document.createElement("div");
       tile.className = "tile";
-      tile.dataset.url = url;
-      const img = document.createElement("img");
-      img.src = url;
-      img.alt = name || "";
+      const img = new Image();
+      img.loading = "lazy";
+      img.decoding = "async";
+      img.alt = foto.name || "foto";
+      // ⬇️ usar la URL que viene de GAS + bust de caché
+      img.src = (foto.src || foto.url) + "&t=" + Date.now();
+
+      // fallback por si Drive da miniatura mejor:
+      img.onerror = () => {
+        if (foto.src && foto.src.includes("/uc?export=view&id=")) {
+          img.src =
+            foto.src.replace("/uc?export=view", "/thumbnail") + "&sz=w800";
+        }
+      };
+
       tile.appendChild(img);
-      mural.appendChild(tile);
+      grid.appendChild(tile);
     });
-    const total = filesState.length;
-    btnAlbum.style.display = total > VISIBLE ? "" : "none";
-    if (total > VISIBLE) btnAlbum.textContent = `📚 Ver más (${total})`;
-    toggleMuralSection();
   }
 
   function renderAlbum() {
