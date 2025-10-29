@@ -865,24 +865,29 @@ footer .wa-chip i {
 }
 
 /* ——— Mural: degradado claro + zoom suave ——— */
+/* ——— Mural: degradado claro + zoom suave ——— */
 #muralGrid .tile {
   background: linear-gradient(145deg, #f8eed1, #fff8e6 40%, #f2e6b8) !important;
   border-radius: 16px;
-  padding: 8px;
+  /* padding: 8px;  ← quítalo para que la imagen llene el tile */
+  padding: 0;
   overflow: hidden;
   box-sizing: border-box;
   position: relative;
 }
+
 #muralGrid .tile img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  /* contain  →  cover para que llene sin dejar bordes */
+  object-fit: cover;
   background: transparent !important;
   border-radius: 12px;
   display: block;
   transition: transform 280ms ease, box-shadow 280ms ease;
   will-change: transform;
 }
+
 #muralGrid .delete-btn {
   position: absolute;
   top: 6px;
