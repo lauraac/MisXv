@@ -483,16 +483,9 @@ const VISIBLE = 6; // fotos visibles en mural
 const LIMIT = 200; // tope visual
 
 // --- REST: listar/subir contra GAS ---
-// === GET (lista) con bust + no-store ===
-function bust(url) {
-  return url + (url.includes("?") ? "&" : "?") + "t=" + Date.now();
-}
-
+// --- REST: listar/subir contra GAS ---
 async function fetchFotosServer() {
-  const res = await fetch(bust(GAS_URL), {
-    method: "GET",
-    cache: "no-store", // evita que el navegador guarde versiones viejas
-  });
+  const res = await fetch(GAS_URL, { method: "GET" });
   if (!res.ok) throw new Error(`list_failed (${res.status})`);
   const data = await res.json().catch(() => ({}));
   return data.items || [];
