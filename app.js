@@ -512,19 +512,14 @@ async function uploadOne(file) {
   });
 
   // POST sin headers (evita preflight)
-  async function subirFoto(file, dataBase64) {
-    const res = await fetch(GAS_URL, {
-      method: "POST",
-      cache: "no-store",
-      body: JSON.stringify({
-        name: file.name,
-        mimeType: file.type || "image/jpeg",
-        dataBase64,
-      }),
-    });
-    if (!res.ok) throw new Error(`upload_failed (${res.status})`);
-    return res.json();
-  }
+  const res = await fetch(GAS_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      name: file.name,
+      mimeType: file.type || "image/jpeg",
+      dataBase64,
+    }),
+  });
 
   if (!res.ok) throw new Error(`Upload HTTP ${res.status}`);
 
