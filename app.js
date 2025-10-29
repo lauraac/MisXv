@@ -483,12 +483,16 @@ const VISIBLE = 6; // fotos visibles en mural
 const LIMIT = 200; // tope visual
 
 // --- REST: listar/subir contra GAS ---
-// --- REST: listar/subir contra GAS ---
 async function fetchFotosServer() {
   const res = await fetch(GAS_URL, { method: "GET" });
   if (!res.ok) throw new Error(`list_failed (${res.status})`);
   const data = await res.json().catch(() => ({}));
-  return data.items || [];
+  return (data.items || []).map((it) => ({
+    id: it.id,
+    name: it.name,
+    url: it.url,
+    createdTime: it.createdTime,
+  }));
 }
 
 async function uploadOne(file) {
@@ -598,11 +602,13 @@ async function uploadOne(file) {
       items.sort((a, b) => new Date(a.createdTime) - new Date(b.createdTime));
       for (const it of items.slice(-LIMIT)) {
         filesState.push({
+          id: it.id, // 👈 importante
           url: it.url,
           name: it.name,
           createdTime: it.createdTime,
         });
       }
+
       renderMural();
       renderAlbum();
     } catch (e) {
@@ -681,25 +687,38 @@ async function uploadOne(file) {
 
   // Visor + descarga
   let currentUrl = null;
-  function openViewer(url, alt) {
+  let currentId = null;
+
+  function openViewer(url, alt, id) {
     currentUrl = url;
+    currentId = id || null;
     viewerImg.src = url;
     viewerImg.alt = alt || "";
     viewer.setAttribute("aria-hidden", "false");
   }
+
   function closeViewer() {
     viewer.setAttribute("aria-hidden", "true");
     viewerImg.src = "";
     currentUrl = null;
+    currentId = null; // 👈 importante
   }
+
   function tileOpenHandler(c) {
     c.addEventListener("click", (e) => {
       const t = e.target.closest(".tile");
       if (!t) return;
       const img = t.querySelector("img");
-      if (img) openViewer(img.src, img.alt);
+      if (!img) return;
+
+      // Busca el id por la URL
+      const found = filesState.find(
+        (f) => f.url === img.src || img.src.startsWith(f.url)
+      );
+      openViewer(img.src, img.alt, found?.id);
     });
   }
+
   tileOpenHandler(mural);
   tileOpenHandler(albumGrid);
   btnCloseV?.addEventListener("click", closeViewer);
@@ -712,6 +731,38 @@ async function uploadOne(file) {
     document.body.appendChild(a);
     a.click();
     a.remove();
+  });
+  // === NUEVO: eliminar imagen desde visor ===
+  const btnDelete = document.getElementById("btnDelete");
+
+  btnDelete?.addEventListener("click", async () => {
+    if (!currentId) {
+      toast("No encuentro el id de la foto 😅");
+      return;
+    }
+    if (!confirm("¿Eliminar esta foto de la galería?")) return;
+
+    try {
+      const res = await fetch(GAS_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "delete", id: currentId }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.ok) throw new Error(json.error || "Delete failed");
+
+      // Quita del estado local
+      const idx = filesState.findIndex((f) => f.id === currentId);
+      if (idx !== -1) filesState.splice(idx, 1);
+
+      // Refresca vistas y cierra visor
+      renderMural();
+      renderAlbum();
+      closeViewer();
+      toast("Foto eliminada 🗑️");
+    } catch (e) {
+      console.warn(e);
+      toast("No se pudo eliminar. Intenta de nuevo.");
+    }
   });
 
   // “Tiempo real”: cada 3 s, con pausa al ocultar pestaña
