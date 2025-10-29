@@ -483,9 +483,16 @@ const VISIBLE = 6; // fotos visibles en mural
 const LIMIT = 200; // tope visual
 
 // --- REST: listar/subir contra GAS ---
-// --- REST: listar/subir contra GAS ---
+// === GET (lista) con bust + no-store ===
+function bust(url) {
+  return url + (url.includes("?") ? "&" : "?") + "t=" + Date.now();
+}
+
 async function fetchFotosServer() {
-  const res = await fetch(GAS_URL, { method: "GET" });
+  const res = await fetch(bust(GAS_URL), {
+    method: "GET",
+    cache: "no-store", // evita que el navegador guarde versiones viejas
+  });
   if (!res.ok) throw new Error(`list_failed (${res.status})`);
   const data = await res.json().catch(() => ({}));
   return data.items || [];
@@ -505,14 +512,19 @@ async function uploadOne(file) {
   });
 
   // POST sin headers (evita preflight)
-  const res = await fetch(GAS_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      name: file.name,
-      mimeType: file.type || "image/jpeg",
-      dataBase64,
-    }),
-  });
+  async function subirFoto(file, dataBase64) {
+    const res = await fetch(GAS_URL, {
+      method: "POST",
+      cache: "no-store",
+      body: JSON.stringify({
+        name: file.name,
+        mimeType: file.type || "image/jpeg",
+        dataBase64,
+      }),
+    });
+    if (!res.ok) throw new Error(`upload_failed (${res.status})`);
+    return res.json();
+  }
 
   if (!res.ok) throw new Error(`Upload HTTP ${res.status}`);
 
